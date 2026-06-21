@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>E-Tempahan Kenderaan — KV Batu Pahat</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#101d33">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="E-Tempahan KVBP">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --charcoal:#101d33;
+    --charcoal-2:#172a47;
+    --steel:#5c6b82;
+    --steel-light:#9aa7bd;
+    --paper:#faf7ee;
+    --paper-dark:#f1e8cf;
+    --line:#dccfa3;
+    --orange:#c6a15b;
+    --orange-dark:#a9813a;
+    --yellow:#e3b23c;
+    --green:#2f8f5b;
+    --red:#b23b2e;
+    --ink:#14202f;
+    --shadow: 0 14px 34px -16px rgba(16,29,51,.4);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .hazard{
+    height:5px;
+    background:linear-gradient(90deg, var(--orange-dark), var(--orange) 35%, #e8d6a8 50%, var(--orange) 65%, var(--orange-dark));
+  }
+  header{
+    background:var(--charcoal);
+    color:var(--paper);
+    padding:34px 20px 30px;
+    position:relative;
+    overflow:hidden;
+  }
+  header::after{
+    content:"";
+    position:absolute;
+    right:-40px; top:-40px;
+    width:200px; height:200px;
+    border:18px solid rgba(198,161,91,0.09);
+    border-radius:50%;
+  }
+  .eyebrow{
+    font-family:'Inter', sans-serif;
+    font-size:12px;
+    font-weight:600;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--orange);
+    margin:0 0 10px;
+  }
+  h1{
+    font-family:'Playfair Display', serif;
+    font-weight:700;
+    letter-spacing:.01em;
+    font-size:clamp(28px,6vw,42px);
+    margin:0;
+    line-height:1.12;
+    color:#ffffff;
+  }
+  .settings-btn{
+    position:absolute; top:24px; right:20px;
+    background:rgba(198,161,91,0.12);
+    border:1px solid rgba(198,161,91,0.35);
+    color:var(--paper);
+    width:38px;height:38px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .15s ease, background .15s ease;
+  }
+  .settings-btn:hover{ background:rgba(198,161,91,0.22); transform:scale(1.06); }
+  .admin-badge{
+    position:absolute; top:26px; right:70px;
+    background:rgba(47,143,91,0.18);
+    border:1px solid rgba(47,143,91,0.5);
+    color:#bfe8cf;
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    padding:6px 11px;
+    border-radius:7px;
+  }
+
+  main{ max-width:880px; margin:0 auto; padding:22px 16px 60px; }
+
+  .banner{
+    background:var(--yellow);
+    color:var(--charcoal);
+    border-radius:10px;
+    padding:14px 16px;
+    font-size:14px;
+    font-weight:600;
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:22px;
+    border:1px solid #e0ad22;
+  }
+  .banner button{
+    margin-left:auto;
+    background:var(--charcoal);
+    color:var(--paper);
+    border:none;
+    padding:8px 14px;
+    border-radius:7px;
+    font-weight:600;
+    font-size:13px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+
+  /* Fleet cards */
+  .fleet{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    margin-bottom:26px;
+  }
+  @media (max-width:560px){ .fleet{ grid-template-columns:1fr; } }
+
+  .tag{
+    background:var(--charcoal-2);
+    color:var(--paper);
+    border-radius:12px;
+    padding:20px 18px 18px;
+    position:relative;
+    box-shadow:var(--shadow);
+    border:1px solid #233a5e;
+    border-top:3px solid var(--orange);
+  }
+  .tag .status-dot{
+    position:absolute;
+    top:18px; right:18px;
+    width:9px;height:9px;
+    border-radius:50%;
+  }
+  .status-dot.ok{ background:var(--green); box-shadow:0 0 0 0 rgba(47,143,91,.6); animation:pulse 2s infinite; }
+  .status-dot.busy{ background:var(--red); }
+  @keyframes pulse{
+    0%{ box-shadow:0 0 0 0 rgba(47,143,91,.55); }
+    70%{ box-shadow:0 0 0 7px rgba(47,143,91,0); }
+    100%{ box-shadow:0 0 0 0 rgba(47,143,91,0); }
+  }
+  .tag .plate{
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    font-size:11.5px;
+    letter-spacing:.06em;
+    background:var(--paper);
+    color:var(--charcoal);
+    display:inline-block;
+    padding:3px 9px;
+    border-radius:5px;
+    margin:2px 0 12px;
+  }
+  .tag h3{
+    font-family:'Playfair Display', serif;
+    margin:0 0 4px;
+    font-size:21px;
+    font-weight:700;
+    letter-spacing:.01em;
+  }
+  .tag .meta{ font-size:12.5px; color:var(--steel-light); margin:0 0 14px; }
+  .tag .state{
+    font-size:13px;
+    font-weight:600;
+    padding-top:10px;
+    border-top:1px solid #243d63;
+  }
+  .tag .state .label{ display:block; font-size:10.5px; text-transform:uppercase; letter-spacing:.1em; color:var(--steel-light); font-weight:600; margin-bottom:3px; }
+
+  /* Booking form panel */
+  .docket{
+    background:var(--paper-dark);
+    border-radius:12px;
+    box-shadow:var(--shadow);
+    margin-bottom:26px;
+    overflow:hidden;
+    border:1px solid var(--line);
+    border-top:3px solid var(--orange);
+  }
+  .docket-body{ padding:26px 22px 26px; }
+  .docket-head{
+    display:flex; align-items:baseline; justify-content:space-between;
+    margin-bottom:20px; flex-wrap:wrap; gap:6px;
+  }
+  .docket-head h2{
+    font-family:'Playfair Display', serif;
+    letter-spacing:.01em;
+    font-size:21px;
+    font-weight:700;
+    margin:0;
+  }
+  .slip-no{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11.5px;
+    color:var(--steel);
+  }
+  form{ display:grid; gap:14px; grid-template-columns:1fr 1fr; }
+  @media (max-width:560px){ form{ grid-template-columns:1fr; } }
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  .field.full{ grid-column:1 / -1; }
+  label{
+    font-size:11.5px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--steel);
+  }
+  input, select, textarea{
+    font-family:'Inter', sans-serif;
+    font-size:14.5px;
+    padding:11px 12px;
+    border-radius:8px;
+    border:1.5px solid var(--line);
+    background:var(--paper);
+    color:var(--ink);
+    width:100%;
+  }
+  input:focus, select:focus, textarea:focus{
+    outline:none;
+    border-color:var(--orange);
+    box-shadow:0 0 0 3px rgba(198,161,91,.22);
+  }
+  textarea{ resize:vertical; min-height:60px; }
+  .submit-row{ grid-column:1/-1; display:flex; align-items:center; gap:14px; margin-top:4px; flex-wrap:wrap; }
+  button.primary{
+    background:var(--orange);
+    color:var(--ink);
+    border:none;
+    font-family:'Inter', sans-serif;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    font-weight:700;
+    font-size:13.5px;
+    padding:13px 26px;
+    border-radius:9px;
+    cursor:pointer;
+    transition:background .15s ease, transform .1s ease;
+  }
+  button.primary:hover{ background:var(--orange-dark); color:#fff; transform:translateY(-1px); }
+  button.primary:disabled{ background:var(--steel-light); color:#fff; cursor:not-allowed; transform:none; }
+  .form-msg{ font-size:13.5px; font-weight:600; }
+  .form-msg.error{ color:var(--red); }
+  .form-msg.ok{ color:var(--green); }
+
+  /* Ledger */
+  .ledger h2{
+    font-family:'Playfair Display', serif;
+    letter-spacing:.01em;
+    font-size:21px;
+    font-weight:700;
+    margin:0 0 14px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .ledger h2 .refresh{
+    margin-left:auto;
+    font-size:12px;
+    font-family:'Inter',sans-serif;
+    text-transform:none;
+    letter-spacing:0;
+    font-weight:600;
+    color:var(--steel);
+    cursor:pointer;
+    background:none;border:none;
+    text-decoration:underline;
+  }
+  .filter-row{ display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+  .chip{
+    font-size:12.5px;
+    font-weight:600;
+    padding:7px 13px;
+    border-radius:999px;
+    border:1.5px solid var(--line);
+    background:var(--paper);
+    cursor:pointer;
+    color:var(--steel);
+  }
+  .chip.active{ background:var(--charcoal); color:var(--paper); border-color:var(--charcoal); }
+
+  .row-card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:11px;
+    padding:14px 16px;
+    margin-bottom:10px;
+    display:grid;
+    grid-template-columns:auto 1fr auto;
+    gap:14px;
+    align-items:center;
+  }
+  @media (max-width:560px){ .row-card{ grid-template-columns:1fr; } }
+  .row-card .vehicle-badge{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    font-weight:700;
+    background:var(--charcoal);
+    color:var(--paper);
+    padding:5px 9px;
+    border-radius:6px;
+    white-space:nowrap;
+    height:fit-content;
+  }
+  .row-card .info b{ display:block; font-size:14.5px; }
+  .row-card .info .dates{ font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--steel); margin:3px 0; }
+  .row-card .info .purpose{ font-size:13px; color:var(--ink); opacity:.85; }
+  .row-card .right{ display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
+  @media (max-width:560px){ .row-card .right{ align-items:flex-start; } }
+  .badge{
+    font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em;
+    padding:4px 9px; border-radius:6px;
+  }
+  .badge.upcoming{ background:#f3e8c9; color:var(--orange-dark); }
+  .badge.active{ background:#f6e2de; color:var(--red); }
+  .badge.done{ background:#e6f1ea; color:var(--green); }
+  .badge.cancelled{ background:#ececec; color:var(--steel); text-decoration:line-through; }
+  .cancel-link{ font-size:12px; color:var(--red); cursor:pointer; border:none; background:none; text-decoration:underline; padding:0; }
+
+  .empty{
+    text-align:center; padding:34px 16px;
+    color:var(--steel);
+    font-size:14px;
+    background:#fff;
+    border:1.5px dashed var(--line);
+    border-radius:12px;
+  }
+  .empty b{ display:block; color:var(--ink); margin-bottom:4px; font-size:15px; }
+
+  /* Modal */
+  .modal-back{
+    position:fixed; inset:0; background:rgba(0,0,0,.5);
+    display:none; align-items:center; justify-content:center; padding:18px; z-index:50;
+  }
+  .modal-back.show{ display:flex; }
+  .modal{
+    background:#fff; border-radius:14px; padding:22px; max-width:440px; width:100%;
+    box-shadow:var(--shadow);
+    border-top:3px solid var(--orange);
+  }
+  .modal h3{ font-family:'Playfair Display',serif; margin:0 0 6px; font-size:19px; font-weight:700; }
+  .modal p{ font-size:13px; color:var(--steel); margin:0 0 16px; line-height:1.5; }
+  .modal input{ margin-bottom:12px; }
+  .modal .modal-actions{ display:flex; gap:10px; justify-content:flex-end; }
+  .ghost-btn{
+    background:none; border:1.5px solid var(--line); color:var(--steel);
+    padding:10px 16px; border-radius:8px; font-weight:600; font-size:13.5px; cursor:pointer;
+  }
+
+  #toast{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--charcoal); color:var(--paper); padding:12px 20px; border-radius:9px;
+    font-size:13.5px; font-weight:600; opacity:0; transition:all .25s ease; z-index:60;
+    box-shadow:var(--shadow); max-width:90vw;
+  }
+  #toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  #toast.error{ background:var(--red); }
+  #toast.ok{ background:var(--green); }
+</style>
+</head>
+<body>
+  <div class="hazard"></div>
+  <header>
+    <button class="settings-btn" id="settingsBtn" title="Tetapan sambungan Google Sheet">⚙</button>
+    <span class="admin-badge" id="adminBadge" style="display:none;">Mod Pentadbir</span>
+    <p class="eyebrow">E-Tempahan Kenderaan</p>
+    <h1>Kolej Vokasional Batu Pahat</h1>
+  </header>
+
+  <main>
+    <div class="banner" id="setupBanner" style="display:none;">
+      <span>⚠️ Belum disambungkan ke Google Sheet. Tekan ⚙ untuk masukkan pautan Apps Script.</span>
+      <button id="setupBannerBtn">Sambung</button>
+    </div>
+
+    <section class="fleet" id="fleetSection">
+      <div class="tag" data-vehicle="Toyota Fortuner">
+        <span class="status-dot ok"></span>
+        <span class="plate">SUV · 7 TEMPAT DUDUK</span>
+        <h3>Toyota Fortuner</h3>
+        <p class="meta">Kenderaan rasmi — perjalanan rasmi/lapangan</p>
+        <div class="state"><span class="label">Status semasa</span><span class="state-text">Memuatkan…</span></div>
+      </div>
+      <div class="tag" data-vehicle="Nissan Urvan">
+        <span class="status-dot ok"></span>
+        <span class="plate">VAN · 12-13 TEMPAT DUDUK</span>
+        <h3>Nissan Urvan</h3>
+        <p class="meta">Kenderaan rasmi — pengangkutan kumpulan</p>
+        <div class="state"><span class="label">Status semasa</span><span class="state-text">Memuatkan…</span></div>
+      </div>
+    </section>
+
+    <section class="docket">
+      <div class="docket-body">
+        <div class="docket-head">
+          <h2>Borang Tempahan</h2>
+          <span class="slip-no" id="slipNo">SLIP #—</span>
+        </div>
+        <form id="bookingForm">
+          <div class="field">
+            <label>Nama Pemohon</label>
+            <input type="text" name="nama" required placeholder="Cth: Zulkifli">
+          </div>
+          <div class="field">
+            <label>Unit / Jawatan</label>
+            <input type="text" name="unit" required placeholder="Cth: Jabatan Automotif">
+          </div>
+          <div class="field">
+            <label>No. Telefon</label>
+            <input type="tel" name="telefon" required placeholder="01X-XXXXXXX">
+          </div>
+          <div class="field">
+            <label>Pilih Kenderaan</label>
+            <select name="kenderaan" required>
+              <option value="">— Pilih —</option>
+              <option value="Toyota Fortuner">Toyota Fortuner</option>
+              <option value="Nissan Urvan">Nissan Urvan</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Tarikh &amp; Masa Mula</label>
+            <input type="datetime-local" name="tarikhMula" required>
+          </div>
+          <div class="field">
+            <label>Tarikh &amp; Masa Tamat</label>
+            <input type="datetime-local" name="tarikhTamat" required>
+          </div>
+          <div class="field full">
+            <label>Destinasi</label>
+            <input type="text" name="destinasi" required placeholder="Cth: Johor Bahru">
+          </div>
+          <div class="field full">
+            <label>Tujuan Penggunaan</label>
+            <textarea name="tujuan" required placeholder="Cth: Lawatan industri pelajar DKM"></textarea>
+          </div>
+          <div class="submit-row">
+            <button type="submit" class="primary" id="submitBtn">Hantar Tempahan</button>
+            <span class="form-msg" id="formMsg"></span>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="ledger">
+      <h2>Senarai Tempahan <button class="refresh" id="refreshBtn">↻ muat semula</button></h2>
+      <div class="filter-row">
+        <button class="chip active" data-filter="Semua">Semua</button>
+        <button class="chip" data-filter="Toyota Fortuner">Fortuner</button>
+        <button class="chip" data-filter="Nissan Urvan">Urvan</button>
+      </div>
+      <div id="ledgerList"></div>
+    </section>
+  </main>
+
+  <div class="modal-back" id="modalBack">
+    <div class="modal">
+      <h3>Sambungan Google Sheet</h3>
+      <p>Tampal pautan <b>Web App URL</b> daripada Google Apps Script yang sudah kau deploy. Tetapan ini dikongsi untuk semua yang guna app ini.</p>
+      <input type="text" id="apiUrlInput" placeholder="https://script.google.com/macros/s/AKfycb.../exec">
+      <div class="modal-actions">
+        <button class="ghost-btn" id="modalCancel">Tutup</button>
+        <button class="primary" id="modalSave">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'vehicle-booking-api-url';
+const ADMIN_FLAG_KEY = 'vehicle-booking-is-admin';
+// Kunci rahsia pentadbir — MESTI sama dengan ADMIN_KEY dalam AppsScript.gs.
+// Hanya orang yang bukak link dengan ?admin=KUNCI_INI sekali akan dapat akses
+// pentadbir (butang Batalkan) — selepas itu browser dia akan ingat terus.
+const ADMIN_KEY = '8c311c8028afb18f';
+let isAdmin = false;
+// Tampal Web App URL Apps Script kau di sini SEKALI — semua orang yang bukak
+// laman ni terus boleh guna, tak payah masing-masing tekan ⚙ lagi.
+// Contoh: 'https://script.google.com/macros/s/AKfycby.../exec'
+const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbyiTQCVu3YNHFB77nKu-q13dJJzHS6iJAHxEFJgDv9Ceyko54Y6iu55VXeoABe9f7Hlig/exec';
+const VEHICLES = ['Toyota Fortuner', 'Nissan Urvan'];
+let API_URL = '';
+let bookings = [];
+let currentFilter = 'Semua';
+
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+function showToast(msg, type=''){
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = 'show ' + type;
+  setTimeout(()=>{ t.className = ''; }, 3200);
+}
+
+function fmtDate(d){
+  if(!d) return '—';
+  const dt = new Date(d);
+  if(isNaN(dt)) return d;
+  return dt.toLocaleString('ms-MY', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
+}
+
+function detectAdmin(){
+  try{
+    const params = new URLSearchParams(window.location.search);
+    const givenKey = params.get('admin');
+    if(givenKey === ADMIN_KEY){
+      localStorage.setItem(ADMIN_FLAG_KEY, '1');
+      // Bersihkan kunci daripada URL supaya tak tertinggal dalam address bar.
+      params.delete('admin');
+      const cleanUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+      window.history.replaceState({}, '', cleanUrl);
+    }
+    isAdmin = localStorage.getItem(ADMIN_FLAG_KEY) === '1';
+    if(isAdmin){ $('#adminBadge').style.display = 'inline-block'; }
+  }catch(e){ isAdmin = false; }
+}
+
+async function loadApiUrl(){
+  try{
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if(saved){ API_URL = saved; }
+    else if(DEFAULT_API_URL){ API_URL = DEFAULT_API_URL; }
+  }catch(e){
+    if(DEFAULT_API_URL){ API_URL = DEFAULT_API_URL; }
+  }
+  updateSetupBanner();
+}
+
+function updateSetupBanner(){
+  const has = !!API_URL;
+  $('#setupBanner').style.display = has ? 'none' : 'flex';
+  $('#submitBtn').disabled = !has;
+}
+
+async function saveApiUrl(url){
+  try{
+    localStorage.setItem(STORAGE_KEY, url);
+  }catch(e){
+    showToast('Gagal simpan dalam browser ni. Cuba browser lain.', 'error');
+    return;
+  }
+  API_URL = url;
+  updateSetupBanner();
+  showToast('Pautan disimpan. Memuatkan data…', 'ok');
+  refreshBookings();
+}
+
+function openModal(){
+  $('#apiUrlInput').value = API_URL;
+  $('#modalBack').classList.add('show');
+}
+function closeModal(){ $('#modalBack').classList.remove('show'); }
+
+$('#settingsBtn').onclick = openModal;
+$('#setupBannerBtn').onclick = openModal;
+$('#modalCancel').onclick = closeModal;
+$('#modalSave').onclick = async ()=>{
+  const url = $('#apiUrlInput').value.trim();
+  if(!url.startsWith('https://script.google.com/')){
+    showToast('Pautan tidak sah. Pastikan ia bermula dengan https://script.google.com/', 'error');
+    return;
+  }
+  await saveApiUrl(url);
+  closeModal();
+};
+
+async function refreshBookings(){
+  if(!API_URL) return;
+  $('#ledgerList').innerHTML = '<div class="empty">Memuatkan senarai tempahan…</div>';
+  try{
+    const res = await fetch(API_URL + '?action=list');
+    const data = await res.json();
+    if(data.success){
+      bookings = data.data || [];
+      renderFleetStatus();
+      renderLedger();
+    }else{
+      showToast(data.error || 'Gagal memuatkan data', 'error');
+    }
+  }catch(e){
+    $('#ledgerList').innerHTML = '<div class="empty"><b>Gagal sambung ke Google Sheet</b>Semak pautan Apps Script kau di ⚙ tetapan.</div>';
+  }
+}
+
+function getVehicleBookings(name){
+  return bookings.filter(b => b.Kenderaan === name && b.Status !== 'Dibatalkan');
+}
+
+function renderFleetStatus(){
+  $$('.tag').forEach(card=>{
+    const name = card.dataset.vehicle;
+    const list = getVehicleBookings(name);
+    const now = new Date();
+    const active = list.find(b => new Date(b['Tarikh Mula']) <= now && now <= new Date(b['Tarikh Tamat']));
+    const dot = card.querySelector('.status-dot');
+    const text = card.querySelector('.state-text');
+    if(active){
+      dot.className = 'status-dot busy';
+      text.textContent = 'Sedang digunakan sehingga ' + fmtDate(active['Tarikh Tamat']);
+    }else{
+      const upcoming = list
+        .filter(b => new Date(b['Tarikh Mula']) > now)
+        .sort((a,b)=> new Date(a['Tarikh Mula']) - new Date(b['Tarikh Mula']))[0];
+      dot.className = 'status-dot ok';
+      text.textContent = upcoming ? 'Tersedia · tempahan akan datang ' + fmtDate(upcoming['Tarikh Mula']) : 'Tersedia sepenuhnya';
+    }
+  });
+}
+
+function statusOf(b){
+  if(b.Status === 'Dibatalkan') return {key:'cancelled', label:'Dibatalkan'};
+  const now = new Date();
+  const start = new Date(b['Tarikh Mula']);
+  const end = new Date(b['Tarikh Tamat']);
+  if(now < start) return {key:'upcoming', label:'Akan Datang'};
+  if(now > end) return {key:'done', label:'Selesai'};
+  return {key:'active', label:'Sedang Digunakan'};
+}
+
+function renderLedger(){
+  let list = bookings.slice().sort((a,b)=> new Date(b['Tarikh Mula']) - new Date(a['Tarikh Mula']));
+  if(currentFilter !== 'Semua'){
+    list = list.filter(b => b.Kenderaan === currentFilter);
+  }
+  const wrap = $('#ledgerList');
+  if(list.length === 0){
+    wrap.innerHTML = '<div class="empty"><b>Tiada tempahan lagi</b>Isi borang di atas untuk buat tempahan pertama.</div>';
+    return;
+  }
+  wrap.innerHTML = list.map(b=>{
+    const s = statusOf(b);
+    const canCancel = isAdmin && (s.key === 'upcoming' || s.key === 'active');
+    return `
+      <div class="row-card">
+        <span class="vehicle-badge">${b.Kenderaan === 'Toyota Fortuner' ? 'FORTUNER' : 'URVAN'}</span>
+        <div class="info">
+          <b>${escapeHtml(b['Nama Pemohon'] || '')} · ${escapeHtml(b['Unit'] || '')}</b>
+          <span class="dates">${fmtDate(b['Tarikh Mula'])} → ${fmtDate(b['Tarikh Tamat'])}</span>
+          <span class="purpose">${escapeHtml(b['Destinasi'] || '')} — ${escapeHtml(b['Tujuan'] || '')}</span>
+        </div>
+        <div class="right">
+          <span class="badge ${s.key}">${s.label}</span>
+          ${canCancel ? `<button class="cancel-link" data-id="${b.ID}">Batalkan</button>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+
+  $$('.cancel-link').forEach(btn=>{
+    btn.onclick = ()=> cancelBooking(btn.dataset.id);
+  });
+}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+async function cancelBooking(id){
+  if(!confirm('Batalkan tempahan ini?')) return;
+  try{
+    const res = await fetch(API_URL + '?action=cancel&id=' + encodeURIComponent(id) + '&key=' + encodeURIComponent(ADMIN_KEY));
+    const data = await res.json();
+    if(data.success){
+      showToast('Tempahan dibatalkan', 'ok');
+      refreshBookings();
+    }else{
+      showToast(data.error || 'Gagal membatalkan', 'error');
+    }
+  }catch(e){
+    showToast('Gagal sambung ke pelayan', 'error');
+  }
+}
+
+$$('.chip').forEach(chip=>{
+  chip.onclick = ()=>{
+    $$('.chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    currentFilter = chip.dataset.filter;
+    renderLedger();
+  };
+});
+
+$('#refreshBtn').onclick = (e)=>{ e.preventDefault(); refreshBookings(); };
+
+function hasOverlap(vehicle, start, end, excludeId){
+  return getVehicleBookings(vehicle).some(b=>{
+    if(excludeId && b.ID === excludeId) return false;
+    const bs = new Date(b['Tarikh Mula']);
+    const be = new Date(b['Tarikh Tamat']);
+    return start <= be && end >= bs;
+  });
+}
+
+$('#bookingForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const msg = $('#formMsg');
+  msg.textContent = '';
+  msg.className = 'form-msg';
+
+  if(!API_URL){
+    msg.textContent = 'Sambungkan ke Google Sheet dahulu (tekan ⚙).';
+    msg.classList.add('error');
+    return;
+  }
+
+  const fd = new FormData(e.target);
+  const data = Object.fromEntries(fd.entries());
+  const start = new Date(data.tarikhMula);
+  const end = new Date(data.tarikhTamat);
+
+  if(end <= start){
+    msg.textContent = 'Tarikh tamat mesti selepas tarikh mula.';
+    msg.classList.add('error');
+    return;
+  }
+  if(hasOverlap(data.kenderaan, start, end)){
+    msg.textContent = data.kenderaan + ' sudah ditempah pada tempoh tersebut. Sila pilih tarikh/masa lain.';
+    msg.classList.add('error');
+    return;
+  }
+
+  const btn = $('#submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Menghantar…';
+
+  try{
+    const params = new URLSearchParams({ action:'book', ...data });
+    const res = await fetch(API_URL + '?' + params.toString());
+    const result = await res.json();
+    if(result.success){
+      msg.textContent = 'Tempahan disahkan! Slip #' + result.id.replace('BK','');
+      msg.classList.add('ok');
+      e.target.reset();
+      refreshBookings();
+    }else{
+      msg.textContent = result.error || 'Gagal menghantar tempahan.';
+      msg.classList.add('error');
+    }
+  }catch(err){
+    msg.textContent = 'Gagal sambung ke pelayan. Cuba lagi.';
+    msg.classList.add('error');
+  }finally{
+    btn.disabled = !API_URL;
+    btn.textContent = 'Hantar Tempahan';
+  }
+});
+
+$('#slipNo').textContent = 'SLIP #' + new Date().toISOString().slice(0,10).replace(/-/g,'');
+
+(async function init(){
+  detectAdmin();
+  await loadApiUrl();
+  if(API_URL){ refreshBookings(); }
+})();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{ /* tak kritikal kalau gagal */ });
+  });
+}
+</script>
+</body>
+</html>
